@@ -1,14 +1,14 @@
-# OpenWhyFi
+# WhyFi
 
-A free, open-source macOS menu bar app for real-time WiFi network diagnostics. Inspired by [WhyFi](https://whyfi.network).
+A free, open-source macOS menu bar app for real-time WiFi network diagnostics.
 
-![OpenWhyFi Screenshot](assets/screenshot.png)
+![WhyFi Screenshot](assets/screenshot.png)
 
 ## About
 
-Ever wondered why your WiFi feels slow? OpenWhyFi lives in your menu bar and gives you instant visibility into your network's health. Monitor signal strength, latency, packet loss, and more, all updated in real-time with sparkline graphs showing trends over the last minute.
+Ever wondered why your WiFi feels slow? WhyFi lives in your menu bar and gives you instant visibility into your network's health. Monitor signal strength, latency, packet loss, and more, all updated in real-time with sparkline graphs showing trends over the last minute.
 
-Whether you're troubleshooting connectivity issues, finding the best spot in your house for your laptop, or just curious about your network performance, OpenWhyFi has you covered.
+Whether you're troubleshooting connectivity issues, finding the best spot in your house for your laptop, or just curious about your network performance, WhyFi has you covered.
 
 ## What it monitors
 
@@ -28,16 +28,16 @@ Whether you're troubleshooting connectivity issues, finding the best spot in you
 Clone the repository and open the project in Xcode:
 
 ```bash
-git clone https://github.com/rmonvfer/OpenWhyFi.git
-cd OpenWhyFi
-open OpenWhyFi.xcodeproj
+git clone https://github.com/rmonvfer/WhyFi.git
+cd WhyFi
+open WhyFi.xcodeproj
 ```
 
-Build and run with `Cmd+R`, or download a pre-built release from the [Releases](https://github.com/rmonvfer/OpenWhyFi/releases) page.
+Build and run with `Cmd+R`, or download a pre-built release from the [Releases](https://github.com/rmonvfer/WhyFi/releases) page.
 
 ## Why Location Services?
 
-Starting with macOS Sonoma, Apple requires apps to have Location Services permission to read WiFi network details like SSID and signal strength. OpenWhyFi does not collect, store, or transmit your location data.
+Starting with macOS Sonoma, Apple requires apps to have Location Services permission to read WiFi network details like SSID and signal strength. WhyFi does not collect, store, or transmit your location data.
 
 ## Contributing
 

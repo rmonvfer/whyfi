@@ -85,7 +85,7 @@
 					};
 				};
 			};
-			buildConfigurationList = F62213602F2AB75A0056D4C8 /* Build configuration list for PBXProject "OpenWhyFi" */;
+			buildConfigurationList = F62213602F2AB75A0056D4C8 /* Build configuration list for PBXProject "WhyFi" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -318,7 +318,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		F62213602F2AB75A0056D4C8 /* Build configuration list for PBXProject "OpenWhyFi" */ = {
+		F62213602F2AB75A0056D4C8 /* Build configuration list for PBXProject "WhyFi" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				F62213702F2AB75A0056D4C8 /* Debug */,
