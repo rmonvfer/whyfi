@@ -47,13 +47,16 @@ struct WiFiMetricsSection: View {
                 }
             } label: {
                 HStack {
-                    if isScanning {
-                        ProgressView()
-                            .scaleEffect(0.7)
-                    } else {
+                    ZStack {
                         Image(systemName: "antenna.radiowaves.left.and.right")
+                            .opacity(isScanning ? 0 : 1)
+                        if isScanning {
+                            ProgressView()
+                                .controlSize(.small)
+                        }
                     }
-                    Text(isScanning ? "Scanning..." : "Scan for Interference")
+                    .frame(width: 16, height: 16)
+                    Text("Scan for Interference")
                 }
                 .frame(maxWidth: .infinity)
             }

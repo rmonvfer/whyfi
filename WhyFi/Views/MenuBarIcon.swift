@@ -124,6 +124,10 @@ struct SmallFaceIndicator: View {
         }
     }
 
+    private var featureColor: Color {
+        .black.opacity(0.7)
+    }
+
     var body: some View {
         Canvas { context, size in
             let center = CGPoint(x: size.width / 2, y: size.height / 2)
@@ -145,7 +149,7 @@ struct SmallFaceIndicator: View {
                     width: eyeRadius * 2,
                     height: eyeRadius * 2
                 )),
-                with: .color(.black.opacity(0.7))
+                with: .color(featureColor)
             )
             context.fill(
                 Path(ellipseIn: CGRect(
@@ -154,7 +158,7 @@ struct SmallFaceIndicator: View {
                     width: eyeRadius * 2,
                     height: eyeRadius * 2
                 )),
-                with: .color(.black.opacity(0.7))
+                with: .color(featureColor)
             )
 
             var mouthPath = Path()
@@ -181,10 +185,79 @@ struct SmallFaceIndicator: View {
 
             context.stroke(
                 mouthPath,
-                with: .color(.black.opacity(0.7)),
+                with: .color(featureColor),
                 lineWidth: 1.2
             )
         }
+    }
+}
+
+struct MenuBarMetricValue {
+    let metric: MenuBarMetric
+    let value: String
+    let color: Color
+
+    static func from(metric: MenuBarMetric, state: NetworkState) -> MenuBarMetricValue? {
+        guard metric != .none else { return nil }
+
+        let value: String
+        let color: Color
+
+        switch metric {
+        case .none:
+            return nil
+        case .rssi:
+            value = "\(state.wifi.rssi)"
+            color = SignalQuality(rssi: state.wifi.rssi).color
+        case .noise:
+            value = "\(state.wifi.noise)"
+            color = state.wifi.noise <= -80 ? .green : .orange
+        case .linkRate:
+            value = "\(Int(state.wifi.linkRate))"
+            color = state.wifi.linkRate >= 100 ? .green : .orange
+        case .routerLatency:
+            value = String(format: "%.0f", state.router.latency)
+            color = LatencyQuality(latency: state.router.latency).color
+        case .internetLatency:
+            value = String(format: "%.0f", state.internet.latency)
+            color = LatencyQuality(latency: state.internet.latency).color
+        case .packetLoss:
+            value = String(format: "%.0f", state.internet.packetLoss)
+            color = state.internet.packetLoss <= 1 ? .green : (state.internet.packetLoss <= 5 ? .yellow : .red)
+        }
+
+        return MenuBarMetricValue(metric: metric, value: value, color: color)
+    }
+}
+
+struct MenuBarWithMetricsView: View {
+    let quality: ConnectionQuality
+    let colorful: Bool
+    let metrics: [MenuBarMetricValue]
+
+    var body: some View {
+        HStack(alignment: .bottom, spacing: 8) {
+            ForEach(Array(metrics.enumerated()), id: \.offset) { index, metric in
+                HStack(alignment: .firstTextBaseline, spacing: 2) {
+                    Text(metric.metric.icon)
+                        .font(.system(size: 9, weight: .semibold))
+                        .foregroundStyle(colorful ? metric.color.opacity(0.7) : Color.primary.opacity(0.7))
+                    Text(metric.value)
+                        .font(.system(size: 13, weight: .medium, design: .monospaced))
+                        .foregroundStyle(colorful ? metric.color : Color.primary)
+                    Text(metric.metric.unit)
+                        .font(.system(size: 10, weight: .regular))
+                        .foregroundStyle(colorful ? metric.color.opacity(0.7) : Color.primary.opacity(0.7))
+                }
+                if index < metrics.count - 1 {
+                    Text("·")
+                        .font(.system(size: 12))
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+        .frame(height: 22, alignment: .bottom)
+        .padding(.bottom, 2)
     }
 }
 
@@ -200,6 +273,26 @@ enum MenuBarIconRenderer {
 
         let image = NSImage(cgImage: cgImage, size: NSSize(width: 28, height: 22))
         image.isTemplate = !colorful
+        return image
+    }
+
+    static func createImageWithMetrics(
+        for quality: ConnectionQuality,
+        colorful: Bool = true,
+        metrics: [MenuBarMetricValue]
+    ) -> NSImage {
+        let view = MenuBarWithMetricsView(quality: quality, colorful: colorful, metrics: metrics)
+            .fixedSize()
+        let renderer = ImageRenderer(content: view)
+        renderer.scale = 2.0
+
+        guard let cgImage = renderer.cgImage else {
+            return createImage(for: quality, colorful: colorful)
+        }
+
+        let width = CGFloat(cgImage.width) / 2.0
+        let image = NSImage(cgImage: cgImage, size: NSSize(width: width, height: 22))
+        image.isTemplate = false
         return image
     }
 }

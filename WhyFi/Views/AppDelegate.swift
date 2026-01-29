@@ -100,6 +100,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func updateIcon(quality: ConnectionQuality) {
         guard let button = statusItem.button else { return }
         let colorful = SettingsManager.shared.colorfulIcon
-        button.image = MenuBarIconRenderer.createImage(for: quality, colorful: colorful)
+        let selectedMetrics = SettingsManager.shared.menuBarMetrics
+
+        let metricValues = selectedMetrics.compactMap { metric in
+            MenuBarMetricValue.from(metric: metric, state: monitor.state)
+        }
+
+        if metricValues.isEmpty {
+            button.image = MenuBarIconRenderer.createImage(for: quality, colorful: colorful)
+        } else {
+            button.image = MenuBarIconRenderer.createImageWithMetrics(
+                for: quality,
+                colorful: colorful,
+                metrics: metricValues
+            )
+        }
     }
 }
