@@ -182,7 +182,7 @@ struct MenuBarMetricBox: View {
             }
         }
         .padding(8)
-        .frame(width: 200)
+        .frame(width: 240)
     }
 }
 
@@ -196,11 +196,12 @@ struct MetricPickerRow: View {
             HStack {
                 if metric != .none {
                     Text(metric.icon)
-                        .font(.system(size: 12, weight: .bold, design: .monospaced))
-                        .frame(width: 20)
+                        .font(.system(size: 10, weight: .bold, design: .monospaced))
+                        .frame(width: 32, alignment: .leading)
                 }
                 Text(metric.rawValue)
                     .font(.callout)
+                    .lineLimit(1)
                 Spacer()
                 if isSelected {
                     Image(systemName: "checkmark")

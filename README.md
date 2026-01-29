@@ -4,7 +4,7 @@ A free, open-source macOS menu bar app for real-time WiFi network diagnostics.
 
 **[whyfi.dev](https://whyfi.dev)**
 
-![WhyFi Screenshot](assets/screenshot.png)
+![WhyFi Screenshot](assets/with_speedtest.png)
 
 ## About
 

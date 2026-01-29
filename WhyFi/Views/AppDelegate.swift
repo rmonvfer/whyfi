@@ -9,7 +9,7 @@ import AppKit
 import Combine
 import SwiftUI
 
-class AppDelegate: NSObject, NSApplicationDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     private var statusItem: NSStatusItem!
     private var popover: NSPopover!
     private var monitor: NetworkMonitor!
@@ -34,6 +34,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         popover.contentSize = NSSize(width: Constants.panelWidth, height: 500)
         popover.behavior = .transient
         popover.animates = true
+        popover.delegate = self
 
         let contentView = PopupPanelView()
             .environment(monitor)
@@ -52,7 +53,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            self?.updateIcon(quality: self?.lastQuality ?? .disconnected)
+            guard let self = self else { return }
+            if !self.popover.isShown {
+                self.updateIcon(quality: self.lastQuality)
+            }
         }
 
         resetStatsObserver = NotificationCenter.default.addObserver(
@@ -87,12 +91,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    func popoverDidClose(_ notification: Notification) {
+        updateIcon(quality: lastQuality)
+    }
+
     private func updateIconFromState() {
         Task { @MainActor in
             let quality = ConnectionQuality(from: monitor.state)
             if quality != lastQuality {
                 lastQuality = quality
-                updateIcon(quality: quality)
+                if !popover.isShown {
+                    updateIcon(quality: quality)
+                }
             }
         }
     }

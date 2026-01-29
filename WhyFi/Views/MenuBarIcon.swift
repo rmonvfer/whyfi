@@ -236,28 +236,22 @@ struct MenuBarWithMetricsView: View {
     let metrics: [MenuBarMetricValue]
 
     var body: some View {
-        HStack(alignment: .bottom, spacing: 8) {
+        HStack(alignment: .center, spacing: 10) {
             ForEach(Array(metrics.enumerated()), id: \.offset) { index, metric in
-                HStack(alignment: .firstTextBaseline, spacing: 2) {
+                HStack(alignment: .firstTextBaseline, spacing: 3) {
                     Text(metric.metric.icon)
-                        .font(.system(size: 9, weight: .semibold))
+                        .font(.system(size: 10, weight: .semibold))
                         .foregroundStyle(colorful ? metric.color.opacity(0.7) : Color.primary.opacity(0.7))
                     Text(metric.value)
-                        .font(.system(size: 13, weight: .medium, design: .monospaced))
+                        .font(.system(size: 14, weight: .medium, design: .monospaced))
                         .foregroundStyle(colorful ? metric.color : Color.primary)
                     Text(metric.metric.unit)
-                        .font(.system(size: 10, weight: .regular))
+                        .font(.system(size: 11, weight: .regular))
                         .foregroundStyle(colorful ? metric.color.opacity(0.7) : Color.primary.opacity(0.7))
-                }
-                if index < metrics.count - 1 {
-                    Text("·")
-                        .font(.system(size: 12))
-                        .foregroundStyle(.secondary)
                 }
             }
         }
-        .frame(height: 22, alignment: .bottom)
-        .padding(.bottom, 2)
+        .frame(height: 22, alignment: .center)
     }
 }
 
