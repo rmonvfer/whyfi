@@ -4,7 +4,9 @@ A free, open-source macOS menu bar app for real-time WiFi network diagnostics.
 
 **[whyfi.dev](https://whyfi.dev)**
 
-![WhyFi Screenshot](assets/with_speedtest.png)
+<p align="center">
+  <img src="assets/with_speedtest.png" width="340" alt="WhyFi Screenshot">
+</p>
 
 ## About
 
@@ -19,6 +21,23 @@ Whether you're troubleshooting connectivity issues, finding the best spot in you
 - **Internet** — Connection quality to Cloudflare's 1.1.1.1
 - **DNS** — Lookup response times
 - **Speed Test** — Download and upload speeds via Cloudflare
+
+## Screenshots
+
+<p align="center">
+  <img src="assets/top_menu.png" width="500" alt="Menu Bar Stats">
+</p>
+<p align="center"><em>Configurable menu bar stats</em></p>
+
+<p align="center">
+  <img src="assets/with_tip.png" width="340" alt="Signal Tips">
+</p>
+<p align="center"><em>Actionable tips based on signal quality</em></p>
+
+<p align="center">
+  <img src="assets/interference_report.png" width="340" alt="Interference Scanner">
+</p>
+<p align="center"><em>Scan for WiFi interference and channel congestion</em></p>
 
 ## Requirements
 
