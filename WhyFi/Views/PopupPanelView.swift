@@ -29,6 +29,8 @@ struct PopupPanelView: View {
                 LocationPermissionView(onRequest: {
                     locationManager.requestAuthorization()
                 })
+            } else if monitor.isLoading {
+                LoadingView()
             } else if monitor.state.isConnected {
                 NetworkInfoSection(
                     wifi: monitor.state.wifi,
@@ -89,14 +91,6 @@ struct PopupPanelView: View {
                 DisconnectedView()
             }
 
-            Divider()
-
-            Button("Quit WhyFi") {
-                NSApplication.shared.terminate(nil)
-            }
-            .buttonStyle(.plain)
-            .foregroundStyle(.secondary)
-            .font(.caption)
         }
         .padding()
         .frame(width: Constants.panelWidth)
@@ -128,6 +122,21 @@ struct LocationPermissionView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 20)
+    }
+}
+
+struct LoadingView: View {
+    var body: some View {
+        VStack(spacing: 12) {
+            ProgressView()
+                .scaleEffect(0.8)
+
+            Text("Scanning network...")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 30)
     }
 }
 

@@ -27,8 +27,8 @@ enum ConnectionQuality {
     var statusIcon: String {
         switch self {
         case .excellent, .good: "face.smiling"
-        case .fair: "face.smiling"
-        case .poor: "exclamationmark"
+        case .fair: "minus"
+        case .poor: "chevron.down"
         case .disconnected: "xmark"
         }
     }
@@ -57,29 +57,140 @@ enum ConnectionQuality {
 
 struct MenuBarIconView: View {
     let quality: ConnectionQuality
+    let colorful: Bool
+
+    private let faceSize: CGFloat = 10
+    private let cutoutSize: CGFloat = 12
 
     var body: some View {
-        ZStack(alignment: .bottomTrailing) {
-            Image(systemName: "antenna.radiowaves.left.and.right")
-                .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(Color(quality.color))
+        ZStack {
+            Image(systemName: "wifi")
+                .font(.system(size: 16, weight: .medium))
+                .foregroundStyle(colorful ? Color(quality.color) : Color.primary)
+                .mask {
+                    if colorful {
+                        Rectangle()
+                            .overlay(alignment: .bottomTrailing) {
+                                Circle()
+                                    .frame(width: cutoutSize, height: cutoutSize)
+                                    .blendMode(.destinationOut)
+                                    .offset(x: 1, y: 1)
+                            }
+                            .compositingGroup()
+                    } else {
+                        Rectangle()
+                    }
+                }
 
-            Circle()
-                .fill(Color(quality.color))
-                .frame(width: 6, height: 6)
-                .overlay(
-                    Circle()
-                        .stroke(Color.black.opacity(0.3), lineWidth: 0.5)
-                )
-                .offset(x: 2, y: 2)
+            if colorful {
+                SmallFaceIndicator(mood: quality.mood, color: Color(quality.color))
+                    .frame(width: faceSize, height: faceSize)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+                    .offset(x: -2, y: -2)
+            }
         }
-        .frame(width: 22, height: 22)
+        .frame(width: 28, height: 22)
+    }
+}
+
+enum FaceMood {
+    case happy
+    case neutral
+    case sad
+}
+
+extension ConnectionQuality {
+    var mood: FaceMood {
+        switch self {
+        case .excellent, .good: .happy
+        case .fair: .neutral
+        case .poor, .disconnected: .sad
+        }
+    }
+}
+
+struct SmallFaceIndicator: View {
+    let mood: FaceMood
+    var color: Color?
+
+    private var faceColor: Color {
+        if let color = color {
+            return color
+        }
+        switch mood {
+        case .happy: return Color(NSColor.systemGreen)
+        case .neutral: return Color(NSColor.systemYellow)
+        case .sad: return Color(NSColor.systemRed)
+        }
+    }
+
+    var body: some View {
+        Canvas { context, size in
+            let center = CGPoint(x: size.width / 2, y: size.height / 2)
+            let radius = min(size.width, size.height) / 2
+
+            context.fill(
+                Path(ellipseIn: CGRect(x: 0, y: 0, width: size.width, height: size.height)),
+                with: .color(faceColor)
+            )
+
+            let eyeY = center.y - radius * 0.2
+            let eyeRadius: CGFloat = radius * 0.15
+            let eyeSpacing = radius * 0.35
+
+            context.fill(
+                Path(ellipseIn: CGRect(
+                    x: center.x - eyeSpacing - eyeRadius,
+                    y: eyeY - eyeRadius,
+                    width: eyeRadius * 2,
+                    height: eyeRadius * 2
+                )),
+                with: .color(.black.opacity(0.7))
+            )
+            context.fill(
+                Path(ellipseIn: CGRect(
+                    x: center.x + eyeSpacing - eyeRadius,
+                    y: eyeY - eyeRadius,
+                    width: eyeRadius * 2,
+                    height: eyeRadius * 2
+                )),
+                with: .color(.black.opacity(0.7))
+            )
+
+            var mouthPath = Path()
+            let mouthY = center.y + radius * 0.25
+            let mouthWidth = radius * 0.5
+
+            switch mood {
+            case .happy:
+                mouthPath.move(to: CGPoint(x: center.x - mouthWidth, y: mouthY))
+                mouthPath.addQuadCurve(
+                    to: CGPoint(x: center.x + mouthWidth, y: mouthY),
+                    control: CGPoint(x: center.x, y: mouthY + radius * 0.4)
+                )
+            case .neutral:
+                mouthPath.move(to: CGPoint(x: center.x - mouthWidth, y: mouthY + radius * 0.1))
+                mouthPath.addLine(to: CGPoint(x: center.x + mouthWidth, y: mouthY + radius * 0.1))
+            case .sad:
+                mouthPath.move(to: CGPoint(x: center.x - mouthWidth, y: mouthY + radius * 0.3))
+                mouthPath.addQuadCurve(
+                    to: CGPoint(x: center.x + mouthWidth, y: mouthY + radius * 0.3),
+                    control: CGPoint(x: center.x, y: mouthY - radius * 0.1)
+                )
+            }
+
+            context.stroke(
+                mouthPath,
+                with: .color(.black.opacity(0.7)),
+                lineWidth: 1.2
+            )
+        }
     }
 }
 
 enum MenuBarIconRenderer {
-    static func createImage(for quality: ConnectionQuality) -> NSImage {
-        let view = MenuBarIconView(quality: quality)
+    static func createImage(for quality: ConnectionQuality, colorful: Bool = true) -> NSImage {
+        let view = MenuBarIconView(quality: quality, colorful: colorful)
         let renderer = ImageRenderer(content: view)
         renderer.scale = 2.0
 
@@ -87,19 +198,42 @@ enum MenuBarIconRenderer {
             return NSImage(systemSymbolName: "wifi", accessibilityDescription: "WiFi")!
         }
 
-        let image = NSImage(cgImage: cgImage, size: NSSize(width: 22, height: 22))
-        image.isTemplate = false
+        let image = NSImage(cgImage: cgImage, size: NSSize(width: 28, height: 22))
+        image.isTemplate = !colorful
         return image
     }
 }
 
 #Preview {
-    HStack(spacing: 20) {
-        MenuBarIconView(quality: .excellent)
-        MenuBarIconView(quality: .good)
-        MenuBarIconView(quality: .fair)
-        MenuBarIconView(quality: .poor)
-        MenuBarIconView(quality: .disconnected)
+    VStack(spacing: 20) {
+        Text("Colorful Icons")
+            .foregroundStyle(.white)
+        HStack(spacing: 20) {
+            MenuBarIconView(quality: .excellent, colorful: true)
+            MenuBarIconView(quality: .good, colorful: true)
+            MenuBarIconView(quality: .fair, colorful: true)
+            MenuBarIconView(quality: .poor, colorful: true)
+            MenuBarIconView(quality: .disconnected, colorful: true)
+        }
+        Text("Monochrome Icons")
+            .foregroundStyle(.white)
+        HStack(spacing: 20) {
+            MenuBarIconView(quality: .excellent, colorful: false)
+            MenuBarIconView(quality: .good, colorful: false)
+            MenuBarIconView(quality: .fair, colorful: false)
+            MenuBarIconView(quality: .poor, colorful: false)
+            MenuBarIconView(quality: .disconnected, colorful: false)
+        }
+        Text("Face Indicators (large)")
+            .foregroundStyle(.white)
+        HStack(spacing: 20) {
+            SmallFaceIndicator(mood: .happy)
+                .frame(width: 30, height: 30)
+            SmallFaceIndicator(mood: .neutral)
+                .frame(width: 30, height: 30)
+            SmallFaceIndicator(mood: .sad)
+                .frame(width: 30, height: 30)
+        }
     }
     .padding()
     .background(.black)

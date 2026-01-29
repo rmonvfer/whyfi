@@ -26,6 +26,7 @@ struct NetworkInfoSection: View {
                     Text(ssid)
                         .font(.title3)
                         .fontWeight(.semibold)
+                        .lineLimit(1)
 
                     FrequencyBadge(band: wifi.frequencyBand)
 

@@ -12,6 +12,7 @@ import Observation
 @MainActor
 final class NetworkMonitor {
     private(set) var state: NetworkState = .empty
+    private(set) var isLoading = true
     private(set) var captivePortalStatus: CaptivePortalStatus = .unknown
     private(set) var captivePortalLoginURL: URL?
     private(set) var rssiHistory = MetricHistory<Double>(capacity: Constants.historyCapacity)
@@ -39,6 +40,9 @@ final class NetworkMonitor {
         guard pollingTask == nil else { return }
 
         pollingTask = Task { [weak self] in
+            await self?.collectWiFiInfoOnly()
+            self?.isLoading = false
+
             while !Task.isCancelled {
                 await self?.collectMetrics()
                 try? await Task.sleep(for: .seconds(Constants.pollingInterval))
@@ -55,6 +59,36 @@ final class NetworkMonitor {
         state.speedTest.isRunning = true
         let results = await speedTestService.runFullTest()
         state.speedTest = results
+    }
+
+    func resetStats() {
+        rssiHistory = MetricHistory<Double>(capacity: Constants.historyCapacity)
+        noiseHistory = MetricHistory<Double>(capacity: Constants.historyCapacity)
+        linkRateHistory = MetricHistory<Double>(capacity: Constants.historyCapacity)
+        routerLatencyHistory = MetricHistory<Double>(capacity: Constants.historyCapacity)
+        routerJitterHistory = MetricHistory<Double>(capacity: Constants.historyCapacity)
+        routerLossHistory = MetricHistory<Double>(capacity: Constants.historyCapacity)
+        internetLatencyHistory = MetricHistory<Double>(capacity: Constants.historyCapacity)
+        internetJitterHistory = MetricHistory<Double>(capacity: Constants.historyCapacity)
+        internetLossHistory = MetricHistory<Double>(capacity: Constants.historyCapacity)
+        dnsLookupHistory = MetricHistory<Double>(capacity: Constants.historyCapacity)
+        state.speedTest = SpeedTestMetrics.empty
+    }
+
+    private func collectWiFiInfoOnly() async {
+        let wifi = await wifiService.getCurrentMetrics()
+        let isConnected = wifi.ssid != nil
+        let gatewayIP = await gatewayResolver.getDefaultGateway()
+
+        state = NetworkState(
+            wifi: wifi,
+            router: .empty(host: "Gateway"),
+            internet: .empty(host: Constants.internetHost),
+            dns: .empty,
+            speedTest: state.speedTest,
+            isConnected: isConnected,
+            gatewayIP: gatewayIP
+        )
     }
 
     private func collectMetrics() async {

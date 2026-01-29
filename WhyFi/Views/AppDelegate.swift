@@ -16,6 +16,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var locationManager: LocationManager!
     private var iconUpdateTimer: Timer?
     private var lastQuality: ConnectionQuality = .disconnected
+    private var iconStyleObserver: NSObjectProtocol?
+    private var resetStatsObserver: NSObjectProtocol?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         monitor = NetworkMonitor()
@@ -44,10 +46,34 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         iconUpdateTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { [weak self] _ in
             self?.updateIconFromState()
         }
+
+        iconStyleObserver = NotificationCenter.default.addObserver(
+            forName: .iconStyleChanged,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.updateIcon(quality: self?.lastQuality ?? .disconnected)
+        }
+
+        resetStatsObserver = NotificationCenter.default.addObserver(
+            forName: .resetStats,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                self?.monitor.resetStats()
+            }
+        }
     }
 
     func applicationWillTerminate(_ notification: Notification) {
         iconUpdateTimer?.invalidate()
+        if let observer = iconStyleObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
+        if let observer = resetStatsObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
     }
 
     @objc func togglePopover() {
@@ -73,6 +99,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func updateIcon(quality: ConnectionQuality) {
         guard let button = statusItem.button else { return }
-        button.image = MenuBarIconRenderer.createImage(for: quality)
+        let colorful = SettingsManager.shared.colorfulIcon
+        button.image = MenuBarIconRenderer.createImage(for: quality, colorful: colorful)
     }
 }

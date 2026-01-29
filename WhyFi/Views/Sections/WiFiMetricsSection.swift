@@ -12,6 +12,12 @@ struct WiFiMetricsSection: View {
     let rssiHistory: [Double]
     let noiseHistory: [Double]
 
+    @State private var isScanning = false
+    @State private var scanResult: InterferenceScanResult?
+    @State private var showingScanResults = false
+
+    private let scanner = InterferenceScanner()
+
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             MetricRow(
@@ -29,6 +35,38 @@ struct WiFiMetricsSection: View {
                 sparklineData: noiseHistory,
                 color: noiseColor
             )
+
+            Button {
+                Task {
+                    isScanning = true
+                    scanResult = await scanner.scan()
+                    isScanning = false
+                    if scanResult != nil {
+                        showingScanResults = true
+                    }
+                }
+            } label: {
+                HStack {
+                    if isScanning {
+                        ProgressView()
+                            .scaleEffect(0.7)
+                    } else {
+                        Image(systemName: "antenna.radiowaves.left.and.right")
+                    }
+                    Text(isScanning ? "Scanning..." : "Scan for Interference")
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.regular)
+            .disabled(isScanning)
+            .popover(isPresented: $showingScanResults) {
+                if let result = scanResult {
+                    InterferenceScanView(result: result) {
+                        showingScanResults = false
+                    }
+                }
+            }
         }
     }
 

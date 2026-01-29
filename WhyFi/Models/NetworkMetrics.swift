@@ -31,7 +31,7 @@ struct WiFiMetrics: Sendable {
     )
 }
 
-enum FrequencyBand: Sendable {
+enum FrequencyBand: Sendable, Equatable {
     case twoPointFourGHz
     case fiveGHz
     case sixGHz
